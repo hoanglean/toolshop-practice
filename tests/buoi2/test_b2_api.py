@@ -16,7 +16,6 @@ KEYWORDS = json.loads((Path(__file__).parents[2] / "data" / "search_keywords.jso
 
 
 # ---------------------------------------------------------------- B2.1 (together)
-@pytest.mark.smoke
 @pytest.mark.api
 def test_b2_1_status_returns_toolshop(api):
     """Goal: API is alive. Precondition: none. Expected: 200 and app_name Toolshop."""
