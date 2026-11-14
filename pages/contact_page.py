@@ -15,6 +15,7 @@ class ContactPage(BasePage):
         self.submit_button = page.get_by_test_id("contact-submit")
         self.success = page.get_by_role("alert")
         self.errors = page.locator("[data-test$='-error']")
+        self.email_error = page.get_by_test_id("email-error")
         self.subject_error = page.get_by_test_id("subject-error")
         self.message_error = page.get_by_test_id("message-error")
 
