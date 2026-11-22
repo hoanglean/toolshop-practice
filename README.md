@@ -133,3 +133,6 @@ Thư mục `bai-doc/` có một bài đọc cho mỗi buổi (25 - 35 phút), cu
 - Chạy `--headed --slowmo 500` để xem.
 - Mở trace.
 - Sau mỗi buổi giảng viên phát bản `pages/` hoàn chỉnh để ai chậm vẫn theo kịp buổi sau.
+
+
+![CI](https://github.com/hoanglean/toolshop-practice/actions/workflows/ci.yml/badge.svg)
