@@ -17,7 +17,7 @@ def test_search_pliers_shows_only_matching_products(page):
     Expected: results are nonempty and every product name contains pliers."""
     home = HomePage(page).open().search("pliers")
     expect(home.search_completed).to_be_visible()
-    expect(home.search_caption).to_contain_text("plierz")
+    expect(home.search_caption).to_contain_text("pliers")
     names = home.product_names.all_inner_texts()
     assert names, "search returned no products"
     assert all("pliers" in name.lower() for name in names), names
