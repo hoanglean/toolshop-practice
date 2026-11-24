@@ -133,3 +133,73 @@ Thư mục `bai-doc/` có một bài đọc cho mỗi buổi (25 - 35 phút), cu
 - Chạy `--headed --slowmo 500` để xem.
 - Mở trace.
 - Sau mỗi buổi giảng viên phát bản `pages/` hoàn chỉnh để ai chậm vẫn theo kịp buổi sau.
+
+
+![CI](https://github.com/hoanglean/toolshop-practice/actions/workflows/ci.yml/badge.svg)
+
+
+## 9. Buổi 3 - BDD và GitHub Actions
+
+Chạy các kịch bản BDD:
+
+```powershell
+python -m pytest tests/buoi3 -v
+```
+
+Kết quả ngày 22/11/2026 là **6 passed**. Bốn kịch bản tìm kiếm gồm ba dòng Examples
+và một Scenario không tìm thấy sản phẩm. Hai dòng Examples của giỏ hàng là
+Combination Pliers / 1 và Claw Hammer / 3.
+
+Step dùng lại Page Object. Giá trị trả về qua `target_fixture` giữ trang sản phẩm,
+đơn giá và giỏ hàng cho các bước tiếp theo. Tham số `{quantity:d}` nhận số nguyên
+để tính đơn giá nhân số lượng.
+
+### B3.1 - Đọc lỗi ban đầu
+
+Trước khi bổ sung step, bộ tìm kiếm có 4 test đỏ vì thiếu hai câu
+`the search caption mentions "{keyword}"` và `I see the message "{message}"`.
+Dòng 11 của search.feature là câu kiểm tra tiêu đề tìm kiếm. Ba dòng Examples
+và một Scenario tạo ra bốn test.
+
+### B3.5 - Giải thích cấu hình CI
+
+| Cấu hình | Lý do |
+|---|---|
+| Push vào main, pull_request, workflow_dispatch | Chạy sau merge, kiểm tra PR và cho phép chạy thủ công khi cần |
+| fail-fast: false | Giữ cả ba job để so sánh kết quả và bằng chứng khi một trình duyệt lỗi |
+| Chromium, Firefox, WebKit | Kiểm tra cùng bộ smoke trên ba engine |
+| -n 2 | Giới hạn số worker phù hợp với runner và Toolshop trong job |
+| --reruns 1 | Chạy lại tối đa một lần khi có lỗi tạm thời |
+| if: always() | Vẫn tải báo cáo và trace lên khi test thất bại |
+| report-chromium, report-firefox, report-webkit | Mỗi job tạo artifact riêng |
+| Toolshop trong Docker | Dữ liệu được tạo mới cho từng job và tránh Cloudflare của site công khai |
+
+CI hiện chạy 4 smoke test trên mỗi trình duyệt. Kết quả chạy hồi quy trên máy
+`python -m pytest tests/buoi1 tests/buoi2 tests/buoi3 tests/ui -m "not github" -n 4 -q`
+là **50 passed**.
+
+### B3.6-B3.8 - Bằng chứng CI và Trace Viewer
+
+[Lượt CI xanh trên ba trình duyệt](https://github.com/hoanglean/toolshop-practice/actions/runs/44979742754)
+có đủ ba artifact báo cáo.
+
+![Ba job CI thành công](docs/evidence/buoi-3-ci-green.png)
+
+[Lượt CI cố ý sai](https://github.com/hoanglean/toolshop-practice/actions/runs/44979947896)
+đổi riêng kỳ vọng tiêu đề thành `plierz`. Mỗi job có 1 failed, 3 passed và 1 rerun.
+Trang vẫn hiện `Searched for: pliers`, nên assertion sai bị phát hiện.
+
+Bài thử nghiệm dùng `tests/ui/test_smoke.py` vì bộ smoke của repo nhóm nằm ở đây.
+Ảnh dưới lấy từ trace Chromium tải trong artifact `report-chromium`.
+Bản sửa khôi phục kỳ vọng về `pliers`.
+
+![Trace Chromium hiển thị kỳ vọng plierz và nội dung pliers](docs/evidence/buoi-3-trace-viewer.png)
+
+Trong lượt đỏ, GitHub trả `mergeable_state=blocked`. Nhánh main yêu cầu PR,
+ít nhất 1 approval và đủ ba status check `test (chromium)`, `test (firefox)`,
+`test (webkit)`, áp dụng cả quản trị viên. PR cần đồng bộ với main trước khi merge.
+
+Để mở lại trace, tải artifact của lượt đỏ, giải nén ngoài repo và chạy
+`playwright show-trace <đường-dẫn-trace.zip>`. Artifact được giữ 7 ngày.
+Report HTML, trace ZIP, ảnh lỗi tự động, môi trường ảo và .env được loại khỏi commit.
+Hai ảnh minh chứng trong docs/evidence được lưu để xem lại trong README.

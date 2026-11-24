@@ -1,9 +1,10 @@
-# B3.5 - fill every TODO, then RENAME this file to ci.yml (remove ".todo"), push, and watch the Actions tab.
-# It is called ci.yml.todo until then so GitHub does not try to run a half-written workflow.
 name: CI
 
 on:
-  # TODO: run on push to main, on every pull request, and manually (3 triggers)
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
 
 env:
   # Each job starts its own Toolshop in Docker (toolshop/start.sh). The public site sits
@@ -13,14 +14,18 @@ env:
   GITHUB_API_URL: https://api.github.com
   GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}   # GitHub gives every workflow this token
 
+permissions:
+  contents: read
+
 jobs:
   test:
     name: test (${{ matrix.browser }})
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     strategy:
-      fail-fast: # TODO: true or false? why?
+      fail-fast: false
       matrix:
-        browser: # TODO: the 3 browsers
+        browser: [chromium, firefox, webkit]
     steps:
       - uses: actions/checkout@v4
 
@@ -42,15 +47,17 @@ jobs:
         run: bash toolshop/start.sh
 
       - name: Run tests
-        # TODO: run only the smoke tests first (-m smoke), on the matrix browser,
-        #       2 workers, 1 rerun, trace + screenshot only on failure, self-contained HTML report
-        run: pytest
+        run: >
+          pytest -m smoke --browser ${{ matrix.browser }}
+          -n 2 --reruns 1
+          --tracing retain-on-failure --screenshot only-on-failure
+          --html=report.html --self-contained-html
 
       - name: Upload report and traces
         uses: actions/upload-artifact@v4
-        if: # TODO: when must this step run?
+        if: always()
         with:
-          name: # TODO: unique per browser
+          name: report-${{ matrix.browser }}
           path: |
             report.html
             test-results/
